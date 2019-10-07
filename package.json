@@ -1,0 +1,19 @@
+{
+  "name": "treeage",
+  "version": "0.4.0",
+  "description": "Make good decisions with trees",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RyanCavanaugh/treeage.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/RyanCavanaugh/treeage/issues"
+  },
+  "homepage": "https://github.com/RyanCavanaugh/treeage#readme"
+}
