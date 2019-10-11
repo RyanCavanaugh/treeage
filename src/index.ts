@@ -18,6 +18,10 @@ export interface Node<T> {
      * Adds a predicated link to the specified node.
      */
     addPathTo(predicate: Predicate<T>, target: Node<T>): void;
+
+
+    addGroup<U extends { [name: string]: Predicate<T> }>(predicateMap: U): { group: Node<T>, map: { [K in keyof U]: Node<T> } };
+
     /**
      * Adds an action to occur on this node if none of its links are followed.
      */
@@ -30,6 +34,9 @@ export interface Node<T> {
      * Creates a node that is traversed to if no other links are traversed.
      */
     otherwise(): Node<T>;
+
+    setOptions(opts: Partial<NodeOptions>): void;
+
     /**
      * Process this item by following any matched links and executing any actions.
      */
@@ -99,7 +106,7 @@ export function createGroupNode<T>() {
 }
 
 export function create<T>(nodeOptions?: NodeOptions): Node<T> {
-    const options: NodeOptions = {
+    let options: NodeOptions = {
         pathMode: "single",
         ...nodeOptions
     };
@@ -180,6 +187,16 @@ export function create<T>(nodeOptions?: NodeOptions): Node<T> {
         }
     }
 
+    function addGroup<U extends { [name: string]: Predicate<T> }>(predicateMap: U) {
+        const map: { [K in keyof U]: Node<T> } = Object.create(null);
+        const group = create<T>(nodeOptions);
+        for (const k of Object.keys(predicateMap) as Array<keyof U>) {
+            map[k] = group.addPath(predicateMap[k]);
+            addPathTo(predicateMap[k], group);
+        }
+        return { group, map };
+    }
+
     function addPath(...predicates: [Predicate<T>, ...Predicate<T>[]]): Node<T> {
         const target = create<T>(nodeOptions);
         if (predicates[0].description) {
@@ -207,6 +224,10 @@ export function create<T>(nodeOptions?: NodeOptions): Node<T> {
         return otherwiseNode = create<T>(nodeOptions);
     }
 
+    function setOptions(opts: Partial<NodeOptions>) {
+        nodeOptions = { ...nodeOptions, ...opts } as NodeOptions;
+    }
+
     function catchImpl(handler: (item: T, error: TreeageError) => void) {
         catchHandler = handler;
     }
@@ -227,7 +248,9 @@ export function create<T>(nodeOptions?: NodeOptions): Node<T> {
         addPathTo,
         addTerminalAction,
         addAlwaysAction,
+        addGroup,
         otherwise,
+        setOptions,
         describe,
         paths,
         actions,
